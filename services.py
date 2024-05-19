@@ -6,12 +6,13 @@ import base64
 import openpyxl
 import re
 import os
-from config import Pexels_API_ENDPOINT
 from random import randrange
 import random
 from urllib.parse import urlparse
 from requests.auth import HTTPBasicAuth
 
+
+Pexels_API_ENDPOINT = "https://api.pexels.com/v1/search"
 
 # Image Operations
 def process_image(keyword, USE_IMAGES):
