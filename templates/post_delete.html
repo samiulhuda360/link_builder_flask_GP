@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Deletion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='custom-css.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.6.0/dist/socket.io.min.js"></script>
+
+
+    <style>
+        .result-message {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .failure {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body class="container-fluid no-padding">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+<a class="navbar-brand" href="{{ url_for('index') }}">
+    <img src="{{ url_for('static', filename='images/search-combat-logo.png') }}" alt="Search Combat Logo" height="40">
+</a>            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/site-manager">Site Data</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="/config">Config Data</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/restapi_test">Rest API Test</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/post_delete">Delete Posts</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger" href="/logout">Logout</a><!-- Styled as a button but functions as a link -->
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+   <div class="container mt-5">
+        <h2>Delete Posts</h2>
+        <form method="post" id="delete-form">
+            <div class="mb-3">
+                <label for="urls" class="form-label">Enter URLs (one per line):</label>
+                <textarea class="form-control" id="urls" name="urls" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger">Delete Posts</button>
+        </form>
+    </div>
+
+    <div id="results" class="container mt-3"></div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="testCompleteModal" tabindex="-1" aria-labelledby="testCompleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testCompleteModalLabel">Delete Operation Complete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The delete operation has been completed. Check the results above.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Socket.io connection
+        const socket = io.connect('http://' + document.domain + ':' + location.port, {
+            transports: ['websocket'], // Force the use of WebSockets
+            // Other options...
+        });
+
+        console.log('Attempting to establish Socket.IO connection...');
+
+        socket.on('connect', function() {
+            console.log('Socket.IO connection established');
+        });
+
+        socket.on('connect_error', function(err) {
+            console.error('Socket.IO connection error:', err);
+        });
+
+        let messageCount = 0;  // Initialize a counter for messages
+
+        socket.on('delete_update', function(data) {
+            console.log('Received delete_update event:', data);
+
+            messageCount++;  // Increment the counter
+            var messageType = data.message.includes("successfully") ? 'success' : 'failure';
+
+            // Try using vanilla JavaScript instead of jQuery
+            var resultsElement = document.getElementById('results');
+            var messageDiv = document.createElement('div');
+            messageDiv.classList.add('result-message');
+            messageDiv.classList.add(messageType);
+            messageDiv.innerHTML = '<strong>' + messageCount + '.</strong> ' + data.message;
+            resultsElement.appendChild(messageDiv);
+
+            // Alternatively, you can use jQuery if it's loaded correctly
+            // $('#results').append('<div class="result-message ' + messageType + '"><strong>' + messageCount + '.</strong> ' + data.message + '</div>');
+        });
+
+        // Listener for the delete completion
+        socket.on('delete_complete', function(data) {
+            console.log('Received delete_complete event:', data);
+            // Show the Bootstrap modal on delete completion
+            $('#testCompleteModal').modal('show');
+        });
+
+        // Get the form element
+        const deleteForm = document.getElementById('delete-form');
+
+        // Add an event listener for form submission
+        deleteForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission behavior
+
+            // Get the form data
+            const formData = new FormData(deleteForm);
+            const urls = formData.get('urls').split('\n').map(url => url.trim());
+
+            // Send the form data to the server using Socket.IO
+            socket.emit('delete_request', { urls });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

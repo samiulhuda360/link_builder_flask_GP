@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Emit Page</title>
+    <script src="{{ url_for('static', filename='socket_io.js') }}"></script>
+</head>
+<body>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="excel_file">
+        <button type="submit" id="startProcess">Start Process</button>
+    </form>
+    <a href="/download_excel" download="data.xlsx">Download Excel</a>
+
+    <h2>Messages from Server:</h2>
+    <div id="tableContainer">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Anchor</th>
+                    <th>Linking URL</th>
+                    <th>Topic</th>
+                    <th>Live URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be added here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Handle the form submission
+        document.getElementById("uploadForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            fetch('/start_emit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data);
+            });
+        });
+
+        // Setup socket.io connection
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Listen for the 'update' event from the server and display the message
+        socket.on('update', function(data) {
+            var dataJSON = JSON.parse(data.data);
+            var tableBody = document.querySelector('#dataTable tbody');
+
+            // Clear the existing table rows
+            tableBody.innerHTML = '';
+
+            // Iterate through the list of data and add rows to the table
+            dataJSON.forEach(function(dataItem) {
+                var row = document.createElement('tr');
+
+                // Define the columns and their values
+                var columns = ['id', 'anchor', 'linking_url', 'topic', 'live_url'];
+
+                columns.forEach(function(column) {
+                    var cell = document.createElement('td');
+                    cell.textContent = dataItem[column];
+                    row.appendChild(cell);
+                });
+
+                tableBody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>

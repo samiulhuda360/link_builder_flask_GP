@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configurations</title>
+    <!-- Include Bootstrap CSS for styling (assuming you're using Bootstrap) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='custom-css.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+<body class="container-fluid no-padding">
+        <!-- Navbar with Home, Site Data and Logout -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+<a class="navbar-brand" href="{{ url_for('index') }}">
+    <img src="{{ url_for('static', filename='images/search-combat-logo.png') }}" alt="Search Combat Logo" height="40">
+</a>            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/site-manager">Site Data</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="/config">Config Data</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="/restapi_test">Rest API Test</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/post_delete">Delete Posts</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger" href="/logout">Logout</a><!-- Styled as a button but functions as a link -->
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+<div class="container mt-5">
+    <h2>Update API Configurations</h2>
+    <form action="/save_api_config" method="post"> <!-- Replace '/update_api_keys' with your backend endpoint to update the API keys -->
+        <div class="mb-3">
+            <label for="openaiapi" class="form-label">Openai API</label>
+            <input type="text" class="form-control" id="openaiapi" name="openaiapi">
+        </div>
+        <div class="mb-3">
+            <label for="pexelsapi" class="form-label">Pexels API</label>
+            <input type="text" class="form-control" id="pexelsapi" name="pexelsapi">
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </form>
+
+<div class="mb-3">
+    <label class="form-label">Openai API</label>
+    <p class="border border-secondary p-2">{{ openai_api }}</p>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Pexels API</label>
+    <p class="border border-secondary p-2">{{ pexels_api }}</p>
+</div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+</div>
+
+
+</body>
+</html>
