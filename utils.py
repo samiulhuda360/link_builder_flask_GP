@@ -39,8 +39,7 @@ api_keys = get_api_keys()
 if api_keys:
     openai.api_key = api_keys["openai_api"]
     Pexels_API_KEY = api_keys["pexels_api"]
-    # print("OpenAI API Key:", openai.api_key)
-    # print("Pexels API Key:", Pexels_API_KEY)
+
 else:
     openai.api_key = ""
     Pexels_API_KEY = ""
