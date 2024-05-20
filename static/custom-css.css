@@ -1,3 +1,9 @@
+.bg-dark {
+  --bs-bg-opacity: 1;
+  background-color: rgb(0 3 73 / 94%) !important;
+}
+
+
 .no-padding {
     padding-left: 0 !important;
     padding-right: 0 !important;
