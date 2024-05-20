@@ -54,7 +54,7 @@ def retry_if_exception(exception):
 def openAI_output(self):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k-0613",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "user",
                  "content": self },
