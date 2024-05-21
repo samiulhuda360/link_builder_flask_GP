@@ -402,8 +402,7 @@ def apitest():
     return jsonify({"message": "API Test completed"}), 200
 
 
-
-@app.route('/upload-excel', methods=['POST'])
+app.route('/upload-excel', methods=['POST'])
 @login_required
 def upload_excel_site_data():
     if 'excel_data' not in request.files:
@@ -417,36 +416,49 @@ def upload_excel_site_data():
     if not (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
         return "Invalid file type. Please upload an Excel file.", 400
 
-    df = pd.read_excel(file, engine='openpyxl')
+    try:
+        df = pd.read_excel(file, engine='openpyxl')
+    except Exception as e:
+        print("Error reading the Excel file:", e)
+        return "Error reading the Excel file.", 500
 
     conn = sqlite3.connect('sites_data.db')
     cursor = conn.cursor()
 
-    for _, row in df.iterrows():
-        sitename, username, app_password = row['Sitename'], row['Username'], row['Application_Password']
-        added_link = row['Added_Link'] if 'Added_Link' in row and not pd.isnull(row['Added_Link']) else None
+    try:
+        for index, row in df.iterrows():
+            sitename, username, app_password = row['Sitename'], row['Username'], row['Application_Password']
+            added_link = row.get('Added_Link')
 
-        cursor.execute('SELECT site_id FROM sites WHERE sitename=?', (sitename,))
-        site_id = cursor.fetchone()
+            cursor.execute('SELECT site_id FROM sites WHERE sitename=?', (sitename,))
+            site_id = cursor.fetchone()
 
-        if site_id:  # if site exists
-            cursor.execute('UPDATE sites SET username=?, app_password=? WHERE site_id=?',
-                           (username, app_password, site_id[0]))
-        else:  # if site doesn't exist
-            cursor.execute('INSERT INTO sites (sitename, username, app_password) VALUES (?, ?, ?)',
-                           (sitename, username, app_password))
-            site_id = (cursor.lastrowid,)
+            if site_id:  # if site exists
+                cursor.execute('UPDATE sites SET username=?, app_password=? WHERE site_id=?',
+                               (username, app_password, site_id[0]))
+                print(f"Updated site: {sitename}")
+            else:  # if site doesn't exist
+                cursor.execute('INSERT INTO sites (sitename, username, app_password) VALUES (?, ?, ?)',
+                               (sitename, username, app_password))
+                site_id = (cursor.lastrowid,)
+                print(f"Inserted site: {sitename}")
 
-        # Insert link if it doesn't exist for the site and the link is not None
-        if added_link is not None:
-            cursor.execute('SELECT url FROM links WHERE site_id=? AND url=?', (site_id[0], added_link))
-            if not cursor.fetchone():
-                cursor.execute('INSERT INTO links (site_id, url) VALUES (?, ?)', (site_id[0], added_link))
+            # Insert link if it doesn't exist for the site and the link is not None
+            if added_link:
+                cursor.execute('SELECT url FROM links WHERE site_id=? AND url=?', (site_id[0], added_link))
+                if not cursor.fetchone():
+                    cursor.execute('INSERT INTO links (site_id, url) VALUES (?, ?)', (site_id[0], added_link))
+                    print(f"Inserted link {added_link} for site {sitename}")
 
-    conn.commit()
-    conn.close()
-    flash('Site Data Updated successfully!', 'success')
-    return redirect(url_for('site_manager'))
+        conn.commit()
+        flash('Site Data Updated successfully!', 'success')
+        return redirect(url_for('site_manager'))
+    except Exception as e:
+        print("Error occurred during data processing:", e)
+        conn.rollback()
+        return "An error occurred during data processing.", 500
+    finally:
+        conn.close()
 
 
 
