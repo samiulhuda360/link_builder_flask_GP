@@ -114,6 +114,16 @@ def construct_image_wp(image_data, query):
 
 # WordPress Posting
 def create_post_content(anchor, topic, linking_url, image_data, embed_code, map_embed_title, nap, USE_IMAGES, NO_BODY_IMAGE):
+    
+    prompts_title = [
+        f"Write an SEO title for a {topic} guide, include 'tips', max 55 chars [Don't mention years/time]",
+        f"Create an SEO title for a {topic} tutorial with 'how-to', under 50 chars [Don't mention years/time]",
+        f"Craft an SEO headline for a {topic} article, use 'best', up to 55 chars [Don't mention years/time]",
+        f"Generate an SEO title for a {topic} piece, include 'guide', max 50 chars [Don't mention years/time]",
+        f"Produce an SEO title for a {topic} post with 'easy', 55 chars or less [Don't mention years/time]"
+    ]
+    
+    title = openAI_output(random.choice(prompts_title))
 
     image_wp, post_id = construct_image_wp(image_data, anchor) if USE_IMAGES else ("", None)
 
@@ -123,7 +133,7 @@ def create_post_content(anchor, topic, linking_url, image_data, embed_code, map_
     paragraph_template = f"Please insert {link_tag} as backlink, inside the paragraphs. Do not alter/change the anchor tag or the link: {link_tag}."
     
     
-    prompt2 = f"""Assume you are an expert content writer. Write a detailed blog post about "Online gaming". The blog post should include an introduction and five subheadings (H2), each with a 100-150 word paragraph elaborating on different aspects of the topic. Use HTML format for the headings and paragraphs, as the content will be posted via the WordPress REST API. Ensure that the subheadings are relevant, informative, and tailored specifically to the given topic.
+    prompt2 = f"""Assume you are an expert content writer. Write a detailed blog post titled: {title}. The blog post should include an introduction and five subheadings (H2), each with a 100-150 word paragraph elaborating on different aspects of the topic. Use HTML format for the headings and paragraphs, as the content will be posted via the WordPress REST API. Ensure that the subheadings are relevant, informative, and tailored specifically to the given topic.
 
             Include the backlink {link_tag} at least once within the content of the first key aspect section.
 
@@ -211,22 +221,11 @@ def create_post_content(anchor, topic, linking_url, image_data, embed_code, map_
         content = ""
 
     print("Final Content:", content)
-    return content
+    return content, title
 
 
-def post_article(target_url, headers, topic, content, post_id, USE_IMAGES):
-    prompts = [
-        f"Write an SEO title for a {topic} guide, include 'tips', max 55 chars",
-        f"Create an SEO title for a {topic} tutorial with 'how-to', under 50 chars",
-        f"Craft an SEO headline for a {topic} article, use 'best', up to 55 chars",
-        f"Generate an SEO title for a {topic} piece, include 'guide', max 50 chars",
-        f"Produce an SEO title for a {topic} post with 'easy', 55 chars or less"
-    ]
+def post_article(target_url, headers, topic, content, post_id, USE_IMAGES, title):  
     
-    title = openAI_output(random.choice(prompts))
-    
-    # title = openAI_output(f"Write an SEO optimized title for a simple article the TOPIC: {topic}. Title should not "
-    #                       f"excess 50-55 characters")
 
     def custom_title(s):
         try:
@@ -409,11 +408,11 @@ def process_site(site_json, user, password, topic, anchor, client_link, embed_co
         post_id = ""
     print("Start Content Creation")
     try:
-        final_content = create_post_content(anchor, topic, client_link, image_data, embed_code, map_embed_title, nap, USE_IMAGES, NO_BODY_IMAGE)
+        final_content, title = create_post_content(anchor, topic, client_link, image_data, embed_code, map_embed_title, nap, USE_IMAGES, NO_BODY_IMAGE)
     except:
-        final_content = ""
+        final_content, title = "", ""
     print("before post url")
-    post_url = post_article(site_json, headers, topic, final_content, post_id, USE_IMAGES)
+    post_url = post_article(site_json, headers, topic, final_content, post_id, USE_IMAGES, title)
 
     return post_url
 
