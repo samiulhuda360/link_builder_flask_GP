@@ -604,7 +604,7 @@ def start_emit():
 
 
                 user_password_data = get_url_data_from_db(host_url)
-                site_json = "https://" + host_url + "/wp-json/wp/v2"
+                site_json = "https://" + host_url.strip() + "/wp-json/wp/v2"
 
                 if user_password_data:
                     user = user_password_data.get('user')
@@ -630,7 +630,7 @@ def start_emit():
 
                     nap = str(name) + str(address) + str(phone) +"<br>"
 
-                    live_url = process_site(site_json, user, password, topic, anchor, linking_url, embed_code,
+                    live_url = process_site(site_json, user.strip(), password.strip(), topic, anchor, linking_url, embed_code,
                                             map_embed_title, nap, USE_IMAGES, NO_BODY_IMAGE)
 
                     if live_url == "Failed To Post":
