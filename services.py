@@ -10,6 +10,8 @@ from random import randrange
 import random
 from urllib.parse import urlparse
 from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+
 
 
 Pexels_API_ENDPOINT = "https://api.pexels.com/v1/search"
@@ -431,11 +433,15 @@ def fetch_site_details():
         if conn:
             conn.close()
 
-# Define the proxy and headers
+# Load environment variables from .env file
+load_dotenv()
+
+# Define the proxy and headers using environment variables
 proxies = {
-    "http": "http://letezcbn-rotate:6792gwkuo8oo@p.webshare.io:80/",
-    "https": "http://letezcbn-rotate:6792gwkuo8oo@p.webshare.io:80/"
+    "http": os.getenv('PROXY_HTTP'),
+    "https": os.getenv('PROXY_HTTPS')
 }
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8,es;q=0.7',

@@ -369,7 +369,7 @@ def apitest():
                 break  # Stop the testing if the global variable is False
             site_url, username, app_password = site
             content = "This is a test post from the API."
-            time.sleep(randrange(5, 10))  # Simulate a delay
+            time.sleep(randrange(3, 7))  # Simulate a delay
             try:
                 success = test_post_to_wordpress(site_url, username, app_password, content)
                 print(success.status_code)
