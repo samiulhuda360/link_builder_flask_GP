@@ -311,6 +311,7 @@ def site_manager():
 @app.route('/restapi_test')
 def test_page():
     sitename_filter = request.args.get('sitename_filter', None)
+    print(f"Received sitename_filter: {sitename_filter}")
 
     conn = sqlite3.connect('sites_data.db')
     cursor = conn.cursor()
@@ -318,29 +319,43 @@ def test_page():
     message = ""
 
     if sitename_filter:
+        print(f"Filtering by sitename: {sitename_filter}")
         cursor.execute('SELECT * FROM sites WHERE sitename = ?', (sitename_filter,))
         site = cursor.fetchone()
+        print(f"Database query result: {site}")
 
         if site:
             site_id, sitename, username, app_password = site
-            response = test_post_to_wordpress(sitename, username, app_password, "This is a test post from the API.")
+            print(f"Fetched site details - ID: {site_id}, Name: {sitename}, Username: {username}")
+
+            response = test_post_to_wordpress(sitename.strip(), username.strip(), app_password.strip(), "This is a test post from the API.")
+            print(f"Post to WordPress response: {response}")
 
             if response and response.status_code == 201:
                 post_id = response.json().get('id')
+                print(f"Post created with ID: {post_id}")
+
                 delete_response = delete_from_wordpress(sitename, username, app_password, post_id)
+                print(f"Delete post response: {delete_response}")
+
                 if delete_response and delete_response.status_code == 200:
                     message = f"Content posted to {sitename} successfully and then deleted."
                 else:
                     message = f"Content posted to {sitename} successfully, but failed to delete."
             else:
-                message = f"Failed to post on {sitename}."
+                message = f"Failed to post on {sitename} {response}."
+        else:
+            print(f"No site found with sitename: {sitename_filter}")
 
     cursor.execute('SELECT DISTINCT sitename FROM sites')
     all_sitenames = [row[0] for row in cursor.fetchall()]
+    print(f"All sitenames: {all_sitenames}")
 
     conn.close()
 
+    print(f"Message to display: {message}")
     return render_template('restapi_test.html', message=message, all_sitenames=all_sitenames)
+
 
 # Route to handle stopping the test
 @app.route('/stop_test', methods=['POST'])
@@ -371,7 +386,7 @@ def apitest():
             content = "This is a test post from the API."
             time.sleep(randrange(3, 7))  # Simulate a delay
             try:
-                success = test_post_to_wordpress(site_url, username, app_password, content)
+                success = test_post_to_wordpress(site_url.strip(), username.strip(), app_password.strip(), content)
                 print(success.status_code)
                 if success.status_code == 201:  # Assuming success is a response object
                     post_id = success.json().get('id')
