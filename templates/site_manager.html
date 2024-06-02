@@ -11,12 +11,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body class="container-fluid no-padding">
-        <!-- Navbar with Home, Site Data and Logout -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <!-- Navbar with Home, Site Data and Logout -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-<a class="navbar-brand" href="{{ url_for('index') }}">
-    <img src="{{ url_for('static', filename='images/search-combat-logo.png') }}" alt="Search Combat Logo" height="40">
-</a>            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/search-combat-logo.png') }}" alt="Search Combat Logo" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -27,7 +28,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/site-manager">Site Data</a>
                     </li>
-                     <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link" href="/config">Config Data</a>
                     </li>
                     <li class="nav-item">
@@ -39,152 +40,147 @@
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link btn btn-outline-danger" href="/logout">Logout</a><!-- Styled as a button but functions as a link -->
+                        <a class="nav-link btn btn-outline-danger" href="/logout">Logout</a>
                     </li>
                 </ul>
+                <!-- Add New Site button -->
+                <button type="button" class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#addSiteModal">
+                    Add New Site
+                </button>
             </div>
         </div>
     </nav>
-<div class="container mt-4">
 
-    <!-- Modal to Add Site -->
-    <div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addSiteModalLabel">Add New Site</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addSiteForm">
-                        <div class="mb-3">
-                            <label for="sitename" class="form-label">Site Name</label>
-                            <input type="text" class="form-control" id="sitename" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">App Password</label>
-                            <input class="form-control" id="app_password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add</button>
-                    </form>
+    <div class="container mt-4">
+        <!-- Modal to Add Site -->
+        <div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addSiteModalLabel">Add New Site</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addSiteForm">
+                            <div class="mb-3">
+                                <label for="sitename" class="form-label">Site Name</label>
+                                <input type="text" class="form-control" id="sitename" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">App Password</label>
+                                <input type="text" class="form-control" id="app_password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="container mt-4">
-    <h2>Sites Data</h2>
-    <div class="row">
-        <!-- Left Form -->
+    <div class="container mt-4">
+        <h2>Sites Data</h2>
+        <div class="row">
+            <!-- Left Form -->
+            <div class="col-md-6">
+                <form method="get" action="/site-manager">
+                    <select name="sitename_filter" id="siteDropdown">
+                        <option value="all">View All</option>
+                        {% for name in all_sitenames %}
+                        <option value="{{ name }}" {% if name == request.args.get('sitename_filter') %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="Check Site Info" class="btn btn-info">
+                    <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
 
-<div class="col-md-6">
-    <form method="get" action="/site-manager">
-        <select name="sitename_filter" id="siteDropdown">
-            <option value="all">View All</option>
-            {% for name in all_sitenames %}
-            <option value="{{ name }}" {% if name == request.args.get('sitename_filter') %}selected{% endif %}>{{ name }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Check Site Info" class="btn btn-info">
-        <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+            <!-- Right Form -->
+            <div class="col-md-6">
+                <form action="/upload-excel" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="excel_data" class="mb-4">
+                    <br>
+                    <input type="submit" value="Upload Site Data" class="btn btn-primary">
+                    <a href="/download_excel_template" class="btn btn-success">Download Excel Template</a>
+                </form>
+                <a href="/download-excel-alldata" class="btn btn-secondary mt-4">Download Sites Data</a>
+            </div>
+        </div>
 
-    </form>
-</div>
+        <div class="container mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
 
-<!-- Right Form -->
-<div class="col-md-6">
-    <form action="/upload-excel" method="POST" enctype="multipart/form-data">
-        <input type="file" name="excel_data" class="mb-4">
-        <br>
-        <!-- Existing Upload Button -->
-        <input type="submit" value="Upload Site Data" class="btn btn-primary">
-        <!-- New Upload Template Button -->
-        <a href="/download_excel_template" class="btn btn-success">Download Excel Template</a>
-    </form>
-</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Website Name</th>
+                    <th>Username</th>
+                    <th>App Password</th>
+                    <th>Link List</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for site in filtered_sites %}
+                <tr>
+                    <td>{{ site.site_id }}</td>
+                    <td>{{ site.sitename }}</td>
+                    <td>{{ site.username }}</td>
+                    <td>{{ site.app_password }}</td>
+                    <td>
+                        <ul>
+                            {% for link in site.links %}
+                            <li>{{ link }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
+    <script>
+        document.getElementById('deleteButton').addEventListener('click', deleteSelectedSite);
 
+        function deleteSelectedSite() {
+            const dropdown = document.getElementById('siteDropdown');
+            const selectedSite = dropdown.value;
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
 
-<div class="container mt-4">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-</div>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Website Name</th>
-            <th>Username</th>
-            <th>App Password</th>
-            <th>Link List</th>
-
-        </tr>
-    </thead>
-    <tbody>
-        {% for site in filtered_sites %}
-        <tr>
-            <td>{{ site.site_id }}</td>
-            <td>{{ site.sitename }}</td>
-            <td>{{ site.username }}</td>
-            <td>{{ site.app_password }}</td>
-            <td>
-              <ul>
-                  {% for link in site.links %}
-                  <li>{{ link }}</li>
-                  {% endfor %}
-              </ul>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
-
-<script>
-    document.getElementById('deleteButton').addEventListener('click', deleteSelectedSite);
-
-    function deleteSelectedSite() {
-        const dropdown = document.getElementById('siteDropdown');
-        const selectedSite = dropdown.value;
-        const selectedOption = dropdown.options[dropdown.selectedIndex];
-
-        if (selectedSite && selectedSite !== "all") {
-            // Confirm the deletion with the user
-            if (confirm(`Are you sure you want to delete ${selectedSite}?`)) {
-                // Make an AJAX request to delete the site
-                fetch(`/delete-site?sitename=${selectedSite}`, { method: 'DELETE' })
-                    .then(response => {
-                        if (response.ok) {
-                            // Remove the deleted site option from the dropdown
-                            selectedOption.remove();
-                            alert(`${selectedSite} has been deleted.`);
-                        } else {
-                            throw new Error('Failed to delete site');
-                        }
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert('Failed to delete site. Please try again.');
-                    });
+            if (selectedSite && selectedSite !== "all") {
+                if (confirm(`Are you sure you want to delete ${selectedSite}?`)) {
+                    fetch(`/delete-site?sitename=${selectedSite}`, { method: 'DELETE' })
+                        .then(response => {
+                            if (response.ok) {
+                                selectedOption.remove();
+                                alert(`${selectedSite} has been deleted.`);
+                            } else {
+                                throw new Error('Failed to delete site');
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Failed to delete site. Please try again.');
+                        });
+                }
+            } else {
+                alert('Please select a site to delete.');
             }
-        } else {
-            alert('Please select a site to delete.');
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>

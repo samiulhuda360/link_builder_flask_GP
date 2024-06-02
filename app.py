@@ -769,6 +769,29 @@ def handle_delete_request(data):
 
     conn.close()
     socketio.emit('delete_complete', {'message': 'Delete operation completed.'})
+    
+def export_to_excel(db_name, excel_file):
+    conn = sqlite3.connect(db_name)
+    query = '''
+    SELECT 
+        s.sitename, 
+        s.username, 
+        s.app_password, 
+        l.url
+    FROM sites s
+    LEFT JOIN links l ON s.site_id = l.site_id
+    '''
+    combined_df = pd.read_sql_query(query, conn)
+    combined_df.columns = ['Sitename', 'Username', 'Application_Password', 'Added_Link']
+    with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
+        combined_df.to_excel(writer, sheet_name='Sites_Links', index=False)
+    conn.close()
+
+@app.route('/download-excel-alldata')
+def download_excel_alldata():
+    excel_file = 'sites_data.xlsx'
+    export_to_excel('sites_data.db', excel_file)
+    return send_file(excel_file, as_attachment=True)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
