@@ -132,14 +132,11 @@ def create_post_content(anchor, topic, linking_url, image_data, embed_code, map_
    
     link_tag = f"<a href='{linking_url}' rel='dofollow'>{anchor}</a>"
 
-    paragraph_template = f"Please insert {link_tag} as backlink, inside the paragraphs. Do not alter/change the anchor tag or the link: {link_tag}."
+    # paragraph_template = f"Please insert {link_tag} as backlink, inside the paragraphs. Do not alter/change the anchor tag or the link: {link_tag}."
     
     
     prompt2 = f"""Assume you are an expert content writer. Write a detailed blog post titled: {title}. The blog post should include an introduction and five subheadings (H2), each with a 100-150 word paragraph elaborating on different aspects of the topic. Use HTML format for the headings and paragraphs, as the content will be posted via the WordPress REST API. Ensure that the subheadings are relevant, informative, and tailored specifically to the given topic.
 
-            Include the backlink {link_tag} at least once within the content of the first key aspect section.
-
-            Example Format:
             <p>Content for the introduction without a heading first paragraph...</p>
             <p>Content for the introduction without a heading second paragraph...</p>
 
@@ -166,8 +163,8 @@ def create_post_content(anchor, topic, linking_url, image_data, embed_code, map_
             <p>Content for finalization/Conclusion/Summary etc...first paragraph.</p>
             <p>Content for finalization/Conclusion/Summary etc...second paragraph.</p>
 
-            Please ensure that the backlink {link_tag} is included in the first key aspect section. The rest of the content should follow the specified format."""
-                
+            Please ensure that the backlink {link_tag} is included in the first key aspect section. The rest of the content should follow the specified format.
+            """
     print(prompt2)
     
     full_content = openAI_output(prompt2)
